@@ -7,11 +7,13 @@ public class Player : MonoBehaviour
     public LeftButton leftButton;
     public RightButton rightButton;
 
+    public GameObject player;
+
     void Update()
     {
         if (leftButton.isLeftPressed)
-            transform.Translate(Vector3.left * Time.deltaTime);
+            player.transform.Translate(Vector3.left * Time.deltaTime);
         if (rightButton.isRightPressed)
-            transform.Translate(Vector3.right * Time.deltaTime);
+            player.transform.Translate(Vector3.right * Time.deltaTime);
     }
 }
