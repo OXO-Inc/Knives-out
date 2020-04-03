@@ -12,8 +12,8 @@ public class Player : MonoBehaviour
     void Update()
     {
         if (leftButton.isLeftPressed)
-            player.transform.Translate(Vector3.left * Time.deltaTime);
+            player.transform.Translate(Vector3.left * Time.deltaTime * 2.5f);
         if (rightButton.isRightPressed)
-            player.transform.Translate(Vector3.right * Time.deltaTime);
+            player.transform.Translate(Vector3.right * Time.deltaTime * 2.5f);
     }
 }
