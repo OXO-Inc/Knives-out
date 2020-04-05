@@ -14,7 +14,12 @@ public class MainMenu : MonoBehaviour
 		Application.targetFrameRate = 60;
     }
 
-    public void loadScene()
+	public void quitGame()
+	{
+		Application.Quit();
+	}
+
+	public void loadScene()
 	{
 		sliderGameObject.SetActive(true);
 		StartCoroutine(loadAsync());

@@ -16,7 +16,7 @@ public class FruitDestroyer : MonoBehaviour
             particleSystemEmission.Play();
             ScoreKeeper.score += 1;
             Destroy(col.gameObject);
-            
+            Destroy(gameObject);
         }
     }
 }
