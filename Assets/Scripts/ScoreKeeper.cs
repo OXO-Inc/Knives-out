@@ -1,11 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public class ScoreKeeper : MonoBehaviour
 {
-    public Text scoreText;
+    public Text scoreTextTimedMode;
+    public Text scoreTextCasualMode;
+    public Text scoreTextExpertMode;
 
     public static int score = 0;
  
@@ -14,9 +14,10 @@ public class ScoreKeeper : MonoBehaviour
         score = 0;
     }
 
-    // Update is called once per frame
     void Update()
     {
-        scoreText.text = score.ToString();
+        scoreTextTimedMode.text = score.ToString();
+        scoreTextCasualMode.text = score.ToString();
+        scoreTextExpertMode.text = score.ToString();
     }
 }
