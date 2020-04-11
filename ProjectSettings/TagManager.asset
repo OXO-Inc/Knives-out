@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Destructor
   - Fruit
+  - Minus
   layers:
   - Default
   - TransparentFX
