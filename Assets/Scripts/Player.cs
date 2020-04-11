@@ -9,6 +9,8 @@ public class Player : MonoBehaviour
     public RightButton[] rightButton;
 
     public GameObject player;
+    public GameObject playerPrefab;
+    public GameObject casualPlayerIcon;
     public GameObject pauseButton;
     public GameObject playButton;
     public GameObject timedMode;
@@ -17,6 +19,8 @@ public class Player : MonoBehaviour
     public GameObject background;
     public GameObject plusScore;
     public GameObject scorePanel;
+
+    public Sprite[] sprites;
 
     public FruitSpawner fruitSpawner;
 
@@ -35,6 +39,7 @@ public class Player : MonoBehaviour
 
     int fastWaveMultiplier = -1;
     int level = 0;
+    int knife;
 
     float fastWaveTime = 15f;
     float secondCount = 60f;
@@ -42,13 +47,13 @@ public class Player : MonoBehaviour
     float playerSpeedMultiplier = 3f;
     float backToNormalTime;
 
-    //TODO: Set sprite of Player according to menu. Change three places: 2 player, and UI knife
-
     void Start()
     {
         Time.timeScale = 1;
         gameModeVal = PlayerPrefs.GetInt("Gamemode");
-        
+        knife = PlayerPrefs.GetInt("knifeNumber");
+        setPlayer(knife);
+
         if (gameModeVal == 1)
         {
             casualMode.SetActive(true);
@@ -62,6 +67,18 @@ public class Player : MonoBehaviour
             expertMode.SetActive(true);
         }
         
+    }
+
+    void setPlayer(int knife)
+    {
+        SpriteRenderer spriteRenderer = player.GetComponent<SpriteRenderer>();
+        spriteRenderer.sprite = sprites[knife];
+
+        spriteRenderer = playerPrefab.GetComponent<SpriteRenderer>();
+        spriteRenderer.sprite = sprites[knife];
+
+        Image image = casualPlayerIcon.GetComponent<Image>();
+        image.sprite = sprites[knife];
     }
 
     void Update()

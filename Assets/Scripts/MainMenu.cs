@@ -8,8 +8,10 @@ public class MainMenu : MonoBehaviour
 	public GameObject sliderGameObject;
 	public GameObject gameModePanel;
 	public GameObject scoreBoardPanel;
+	public GameObject knifeChangePanel;
 	public GameObject soundPanel;
 	public GameObject checkImage;
+	public GameObject[] knives;
 
 	public Text casualScore;
 	public Text expertScore;
@@ -23,7 +25,9 @@ public class MainMenu : MonoBehaviour
 
 	private bool isSoundPanelOpen = false;
 	private bool isGameModePanelOpen = false;
-	private bool isscoreBoardPanelOpen = false;
+	private bool isScoreBoardPanelOpen = false;
+	private bool isKnifeChangePanelOpen = false;
+	private bool playSound = true;
 
 	void Start()
     {
@@ -46,16 +50,19 @@ public class MainMenu : MonoBehaviour
 		AsyncOperation operation = SceneManager.LoadSceneAsync(1);
 		while (!operation.isDone)
 		{
-			float progress = Mathf.Clamp01(operation.progress);
-			slider.value = progress;
+			slider.value = operation.progress;
 			yield return null;
 		}
 	}
 
     /* Game mode Setting */
     public void chooseGameMode(int mode)
-    {
-		playGameSound();
+	{
+		if (playSound)
+			playSound = false;
+		else
+			playGameSound();
+
 		RectTransform rectTransform = checkImage.GetComponent<RectTransform>();
 		if (mode == 1)
 		{
@@ -77,7 +84,6 @@ public class MainMenu : MonoBehaviour
 	/* Sound Setting */
 	public void soundSetting(float volume)
 	{
-		Debug.Log(volume);
 		AudioListener.volume = volume;
 		PlayerPrefs.SetFloat("volumeLevel", AudioListener.volume);
 	}
@@ -90,7 +96,7 @@ public class MainMenu : MonoBehaviour
 			closePanel("gamemode");
 			return;
 		}
-		if (isscoreBoardPanelOpen)
+		if (isScoreBoardPanelOpen)
 		{
 			closePanel("scoreboard");
 		}
@@ -101,7 +107,7 @@ public class MainMenu : MonoBehaviour
 	public void scoreBoard()
 	{
 		playPanelSound();
-		if (isscoreBoardPanelOpen)
+		if (isScoreBoardPanelOpen)
 		{
 			closePanel("scoreboard");
 			return;
@@ -110,11 +116,26 @@ public class MainMenu : MonoBehaviour
         {
 			closePanel("gamemode");
         }
-		isscoreBoardPanelOpen = true;
+		isScoreBoardPanelOpen = true;
 		scoreBoardPanel.SetActive(true);
 	}
 
-    public void sound()
+	public void knifeBoard()
+	{
+		playPanelSound();
+		playSound = true;
+		changeKnife(PlayerPrefs.GetInt("knifeNumber", 0));
+		if (isKnifeChangePanelOpen)
+		{
+			closePanel("knife");
+			return;
+		}
+
+		isKnifeChangePanelOpen = true;
+		knifeChangePanel.SetActive(true);
+	}
+
+	public void sound()
     {
 		playPanelSound();
 		if (isSoundPanelOpen)
@@ -136,7 +157,7 @@ public class MainMenu : MonoBehaviour
 		}
 		if (menuName == "scoreboard")
 		{
-			isscoreBoardPanelOpen = false;
+			isScoreBoardPanelOpen = false;
 			scoreBoardPanel.SetActive(false);
 		}
 		if (menuName == "sound")
@@ -144,7 +165,36 @@ public class MainMenu : MonoBehaviour
 			isSoundPanelOpen = false;
 			soundPanel.SetActive(false);
 		}
+		if (menuName == "knife")
+		{
+			isKnifeChangePanelOpen = false;
+			knifeChangePanel.SetActive(false);
+		}
 	}
+
+    /* Knife */
+    public void changeKnife(int i)
+    {
+		if (playSound)
+			playSound = false;
+		else
+			playGameSound();
+
+		GameObject knife = knives[i];
+        GameObject selected = knife.transform.GetChild(0).gameObject;
+        GameObject locked = knife.transform.GetChild(1).gameObject;
+
+		if (locked.active)
+			return;
+        else
+        {
+			GameObject previouslySelected = knives[PlayerPrefs.GetInt("knifeNumber", 0)];
+			GameObject check = previouslySelected.transform.GetChild(0).gameObject;
+			check.SetActive(false);
+			selected.SetActive(true);
+			PlayerPrefs.SetInt("knifeNumber", i);
+		}
+    }
 
 	/* Sound Effect */
 	private void playPanelSound()

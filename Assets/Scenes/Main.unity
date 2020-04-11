@@ -7073,7 +7073,7 @@ Canvas:
   m_RenderMode: 1
   m_Camera: {fileID: 519420031}
   m_PlaneDistance: 100
-  m_PixelPerfect: 0
+  m_PixelPerfect: 1
   m_ReceivesEvents: 1
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
@@ -7181,6 +7181,8 @@ MonoBehaviour:
   - {fileID: 316321799}
   - {fileID: 875656123}
   player: {fileID: 269060203}
+  playerPrefab: {fileID: 44260424}
+  casualPlayerIcon: {fileID: 367331860}
   pauseButton: {fileID: 499291587}
   playButton: {fileID: 481603424}
   timedMode: {fileID: 1248282507}
@@ -7189,6 +7191,16 @@ MonoBehaviour:
   background: {fileID: 35864771}
   plusScore: {fileID: 280668466}
   scorePanel: {fileID: 1175999909}
+  sprites:
+  - {fileID: 21300000, guid: 9a623ddcd599e4df0aa67d8dc011e872, type: 3}
+  - {fileID: 21300000, guid: a77cda45472884eceb378e8125b51e79, type: 3}
+  - {fileID: 21300000, guid: d4d2cf3c091a142278422e9efc35418a, type: 3}
+  - {fileID: 21300000, guid: 9be24c2020d284a6c9b42c31e691f375, type: 3}
+  - {fileID: 21300000, guid: 619934b581e3d4d7d9550ccd451ef637, type: 3}
+  - {fileID: 21300000, guid: de11eeb435024401c9b4569d59a7924d, type: 3}
+  - {fileID: 21300000, guid: e2baf0ced1a7d431190db008ed75a5b2, type: 3}
+  - {fileID: 21300000, guid: d7a591a1949ca417295624859f806f9c, type: 3}
+  - {fileID: 21300000, guid: e01f7f6211fe94a98afe751f89a8731b, type: 3}
   fruitSpawner: {fileID: 828688437}
   time: {fileID: 1964704592}
   knives: {fileID: 679257337}
