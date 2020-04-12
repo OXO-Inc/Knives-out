@@ -11,7 +11,7 @@ public class Fire : MonoBehaviour
 
     public void fireTrigger()
     {
-        if (Time.timeScale != 0)
+        if (Time.timeScale != 0 && playerScript.gameOver == false)
         {
             fireKnife.Play();
             Transform transform = player.transform;

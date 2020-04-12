@@ -31,6 +31,7 @@ public class MainMenu : MonoBehaviour
 
 	void Start()
     {
+		Time.timeScale = 1;
 		Application.targetFrameRate = 60;
 		chooseGameMode(PlayerPrefs.GetInt("Gamemode",1));
 		setHighScores();
@@ -188,10 +189,10 @@ public class MainMenu : MonoBehaviour
 			return;
         else
         {
+			selected.SetActive(true);
 			GameObject previouslySelected = knives[PlayerPrefs.GetInt("knifeNumber", 0)];
 			GameObject check = previouslySelected.transform.GetChild(0).gameObject;
 			check.SetActive(false);
-			selected.SetActive(true);
 			PlayerPrefs.SetInt("knifeNumber", i);
 		}
     }

@@ -7,6 +7,8 @@ public class FruitSpawner : MonoBehaviour
 
     public GameObject fruit;
 
+    public Player player;
+
     private float spawnTime = 0f;
     public float spawnDelay = 1f;
     public float speedMultiplier = .7f;
@@ -16,6 +18,15 @@ public class FruitSpawner : MonoBehaviour
     void Start()
     {
         callInvoke();
+    }
+
+    void Update()
+    {
+        if (player.gameOver)
+        {
+            CancelInvoke("spawnFruit");
+            return;
+        }
     }
 
     public void callInvoke()

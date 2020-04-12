@@ -2,15 +2,16 @@
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.Collections;
+using UnityEngine.Advertisements;
 
-public class Player : MonoBehaviour
+public class Player : MonoBehaviour, IUnityAdsListener
 {
     public LeftButton[] leftButton;
     public RightButton[] rightButton;
 
     public GameObject player;
     public GameObject playerPrefab;
-    public GameObject casualPlayerIcon;
+    public GameObject[] casualPlayerIcon;
     public GameObject pauseButton;
     public GameObject playButton;
     public GameObject timedMode;
@@ -19,6 +20,7 @@ public class Player : MonoBehaviour
     public GameObject background;
     public GameObject plusScore;
     public GameObject scorePanel;
+    public GameObject casualRewardedPanel;
 
     public Sprite[] sprites;
 
@@ -41,15 +43,23 @@ public class Player : MonoBehaviour
     int level = 0;
     int knife;
 
+    public bool gameOver = false;
+
+    bool testMode = true; //TODO:
+
     float fastWaveTime = 15f;
     float secondCount = 60f;
     float timeElapsed = 0f;
     float playerSpeedMultiplier = 3f;
     float backToNormalTime;
 
+    string gameId = "3550261";
+    string myPlacementId = "rewardedVideo";
+
     void Start()
     {
         Time.timeScale = 1;
+        Advertisement.Initialize(gameId, testMode);
         gameModeVal = PlayerPrefs.GetInt("Gamemode");
         knife = PlayerPrefs.GetInt("knifeNumber");
         setPlayer(knife);
@@ -73,16 +83,21 @@ public class Player : MonoBehaviour
     {
         SpriteRenderer spriteRenderer = player.GetComponent<SpriteRenderer>();
         spriteRenderer.sprite = sprites[knife];
-
         spriteRenderer = playerPrefab.GetComponent<SpriteRenderer>();
         spriteRenderer.sprite = sprites[knife];
 
-        Image image = casualPlayerIcon.GetComponent<Image>();
+        Image image = casualPlayerIcon[0].GetComponent<Image>();
+        image.sprite = sprites[knife];
+        image = casualPlayerIcon[1].GetComponent<Image>();
         image.sprite = sprites[knife];
     }
 
     void Update()
     {
+        //Game over
+        if (gameOver)
+            return;
+
         //Player Control
         if (leftButton[0].isLeftPressed || leftButton[1].isLeftPressed)
             player.transform.Translate(Vector3.left * Time.deltaTime * playerSpeedMultiplier);
@@ -187,6 +202,7 @@ public class Player : MonoBehaviour
     private void gameOverTimedMode()
     {
         Time.timeScale = 0;
+        gameOver = true;
         gameScore.text = "Score: " + ScoreKeeper.score.ToString();
         int highScore = PlayerPrefs.GetInt("timedScore", -1);
         if (ScoreKeeper.score > highScore)
@@ -204,6 +220,7 @@ public class Player : MonoBehaviour
     private void gameOverCasualMode()
     {
         Time.timeScale = 0;
+        gameOver = true;
         gameScore.text = "Score: " + ScoreKeeper.score.ToString();
         int highScore = PlayerPrefs.GetInt("casualScore", -1);
         if (ScoreKeeper.score > highScore)
@@ -213,14 +230,18 @@ public class Player : MonoBehaviour
         }
         else
             bestScore.text = "Best: " + highScore.ToString();
-        scorePanel.SetActive(true);
+        
         pauseButton.SetActive(false);
-        casualMode.SetActive(false);
+        if (Advertisement.IsReady(myPlacementId))
+            casualRewardedPanel.SetActive(true);
+        else
+            skip();
     }
 
     public void gameOverExpertMode()
     {
         Time.timeScale = 0;
+        gameOver = true;
         gameScore.text = "Score: " + ScoreKeeper.score.ToString();
         int highScore = PlayerPrefs.GetInt("expertScore", -1);
         if (ScoreKeeper.score > highScore)
@@ -268,8 +289,72 @@ public class Player : MonoBehaviour
         SceneManager.LoadScene(1);
     }
 
+    public void watchAd()
+    {
+        Advertisement.AddListener(this);
+        OnUnityAdsReady(myPlacementId);
+    }
+
+    public void skip()
+    {
+        Advertisement.RemoveListener(this);
+        casualRewardedPanel.SetActive(false);
+        scorePanel.SetActive(true);
+        casualMode.SetActive(false);
+    }
+
+    private void resumeGame()
+    {
+        fruitSpawner.callInvoke();
+        Advertisement.RemoveListener(this);
+        numberOfKnives += 25;
+        gameOver = false;
+        casualRewardedPanel.SetActive(false);
+        scorePanel.SetActive(false);
+        casualMode.SetActive(true);
+        pauseButton.SetActive(true);
+        Time.timeScale = 1;  
+    }
+
     private void playGameSound()
     {
         gameClick.Play();
+    }
+
+    /* Rewarded Ads */
+
+    public void OnUnityAdsReady(string placementId)
+    {
+        // If the ready Placement is rewarded, show the ad:
+        if (placementId == myPlacementId)
+        {
+            Advertisement.Show(myPlacementId);
+        }
+    }
+
+    public void OnUnityAdsDidFinish(string placementId, ShowResult showResult)
+    {
+        if (showResult == ShowResult.Finished)
+        {
+            resumeGame();
+        }
+        else if (showResult == ShowResult.Skipped)
+        {
+            skip();
+        }
+        else if (showResult == ShowResult.Failed)
+        {
+            skip();
+        }
+    }
+
+    public void OnUnityAdsDidError(string message)
+    {
+        skip();
+    }
+
+    public void OnUnityAdsDidStart(string placementId)
+    {
+        // Optional actions to take when the end-users triggers an ad.
     }
 }
