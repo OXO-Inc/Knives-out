@@ -10,6 +10,9 @@ public class FruitDestroyer : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D col)
     {
+        if (col.gameObject.tag == "Destructor")
+            return;
+
         if (col.gameObject.tag != "Destroyer")
         {
             fruitHit.Play();

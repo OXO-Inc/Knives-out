@@ -6,11 +6,12 @@ public class FruitSpawner : MonoBehaviour
     public Sprite[] fruits;
 
     public GameObject fruit;
+    //public GameObject playerKnife;
 
     public Player player;
 
     private float spawnTime = 0f;
-    public float spawnDelay = 1f;
+    public float spawnDelay = .85f;
     public float speedMultiplier = .7f;
 
     public float[] speeds = new float[7] { -4.32f, -4.64f, -4.8f, -4.48f, -4.96f, -4f, -4.16f };
@@ -46,4 +47,13 @@ public class FruitSpawner : MonoBehaviour
         Rigidbody2D rb = clone.GetComponent<Rigidbody2D>();
         rb.velocity = new Vector2(0.0f, speeds[i] * speedMultiplier);
     }
+
+    //public void spawnKnife()
+    //{
+    //    Debug.Log("called");
+    //    Quaternion rotation = Quaternion.Euler(0, 0, Random.Range(-9f, 9f) * 10f);
+    //    GameObject clone = Instantiate(playerKnife, new Vector3(Random.Range(-2.25f, 2.25f), 5.5f, 0), rotation);
+    //    Rigidbody2D rb = clone.GetComponent<Rigidbody2D>();
+    //    rb.velocity = new Vector2(0.0f, 5 * speedMultiplier);
+    //}
 }

@@ -9,8 +9,11 @@ public class MainMenu : MonoBehaviour
 	public GameObject gameModePanel;
 	public GameObject scoreBoardPanel;
 	public GameObject knifeChangePanel;
+	public GameObject gameControllerPanel;
 	public GameObject soundPanel;
 	public GameObject checkImage;
+	public GameObject checkImageGameControl;
+
 	public GameObject[] knives;
 
 	public Text casualScore;
@@ -27,6 +30,7 @@ public class MainMenu : MonoBehaviour
 	private bool isGameModePanelOpen = false;
 	private bool isScoreBoardPanelOpen = false;
 	private bool isKnifeChangePanelOpen = false;
+	private bool isGameControllerPanelOpen = false;
 	private bool playSound = true;
 
 	void Start()
@@ -34,8 +38,10 @@ public class MainMenu : MonoBehaviour
 		Time.timeScale = 1;
 		Application.targetFrameRate = 60;
 		chooseGameMode(PlayerPrefs.GetInt("Gamemode",1));
+        chooseGameController(PlayerPrefs.GetInt("controller", 1));
 		setHighScores();
 		soundSlider.value = PlayerPrefs.HasKey("volumeLevel") ? PlayerPrefs.GetFloat("volumeLevel") : 0.5f;
+		setKnifeInMenu();
 	}
 
     /* Load Game Screen */
@@ -56,8 +62,29 @@ public class MainMenu : MonoBehaviour
 		}
 	}
 
-    /* Game mode Setting */
-    public void chooseGameMode(int mode)
+	/* Game controller setting */
+	public void chooseGameController(int mode)
+	{
+		if (playSound)
+			playSound = false;
+		else
+			playGameSound();
+
+		RectTransform rectTransform = checkImageGameControl.GetComponent<RectTransform>();
+		if (mode == 1)
+		{
+			rectTransform.localPosition = new Vector3(-180, -250, 0);
+			PlayerPrefs.SetInt("controller", 1);
+		}
+		else if (mode == 2)
+		{
+			rectTransform.localPosition = new Vector3(170, -250, 0);
+			PlayerPrefs.SetInt("controller", 2);
+		}
+	}
+
+	/* Game mode Setting */
+	public void chooseGameMode(int mode)
 	{
 		if (playSound)
 			playSound = false;
@@ -90,16 +117,49 @@ public class MainMenu : MonoBehaviour
 	}
 
     /* Panels */
-	public void gameMode()
+    public void gameController()
     {
 		playPanelSound();
-		if (isGameModePanelOpen) {
-			closePanel("gamemode");
+		if (isGameControllerPanelOpen)
+		{
+			closePanel("controller");
 			return;
+		}
+		if (isGameModePanelOpen)
+		{
+			closePanel("gamemode");
 		}
 		if (isScoreBoardPanelOpen)
 		{
 			closePanel("scoreboard");
+		}
+		if (isKnifeChangePanelOpen)
+		{
+			closePanel("knife");
+		}
+		gameControllerPanel.SetActive(true);
+		isGameControllerPanelOpen = true;
+	}
+
+	public void gameMode()
+    {
+		playPanelSound();
+		if (isGameModePanelOpen)
+        {
+			closePanel("gamemode");
+			return;
+		}
+		if (isGameControllerPanelOpen)
+		{
+			closePanel("controller");
+		}
+		if (isScoreBoardPanelOpen)
+		{
+			closePanel("scoreboard");
+		}
+		if (isKnifeChangePanelOpen)
+		{
+			closePanel("knife");
 		}
 		gameModePanel.SetActive(true);
 		isGameModePanelOpen = true;
@@ -113,10 +173,18 @@ public class MainMenu : MonoBehaviour
 			closePanel("scoreboard");
 			return;
 		}
-        if(isGameModePanelOpen)
+		if (isGameControllerPanelOpen)
+		{
+			closePanel("controller");
+		}
+		if (isGameModePanelOpen)
         {
 			closePanel("gamemode");
         }
+		if (isKnifeChangePanelOpen)
+		{
+			closePanel("knife");
+		}
 		isScoreBoardPanelOpen = true;
 		scoreBoardPanel.SetActive(true);
 	}
@@ -125,15 +193,26 @@ public class MainMenu : MonoBehaviour
 	{
 		playPanelSound();
 		playSound = true;
-		changeKnife(PlayerPrefs.GetInt("knifeNumber", 0));
 		if (isKnifeChangePanelOpen)
 		{
 			closePanel("knife");
 			return;
 		}
-
+		if (isGameControllerPanelOpen)
+		{
+			closePanel("controller");
+		}
+		if (isScoreBoardPanelOpen)
+		{
+			closePanel("scoreboard");
+		}
+		if (isGameModePanelOpen)
+		{
+			closePanel("gamemode");
+		}
 		isKnifeChangePanelOpen = true;
 		knifeChangePanel.SetActive(true);
+		setKnifeInMenu();
 	}
 
 	public void sound()
@@ -171,8 +250,14 @@ public class MainMenu : MonoBehaviour
 			isKnifeChangePanelOpen = false;
 			knifeChangePanel.SetActive(false);
 		}
+		if (menuName == "controller")
+		{
+			isGameControllerPanelOpen = false;
+			gameControllerPanel.SetActive(false);
+		}
 	}
 
+    
     /* Knife */
     public void changeKnife(int i)
     {
@@ -185,17 +270,24 @@ public class MainMenu : MonoBehaviour
         GameObject selected = knife.transform.GetChild(0).gameObject;
         GameObject locked = knife.transform.GetChild(1).gameObject;
 
-		if (locked.active)
+		if (locked.activeInHierarchy)
 			return;
         else
         {
 			selected.SetActive(true);
-			GameObject previouslySelected = knives[PlayerPrefs.GetInt("knifeNumber", 0)];
+			GameObject previouslySelected = knives[PlayerPrefs.GetInt("knifeNumber")];
 			GameObject check = previouslySelected.transform.GetChild(0).gameObject;
 			check.SetActive(false);
 			PlayerPrefs.SetInt("knifeNumber", i);
 		}
     }
+
+	private void setKnifeInMenu()
+	{
+		GameObject knife = knives[PlayerPrefs.GetInt("knifeNumber", 0)];
+		GameObject selected = knife.transform.GetChild(0).gameObject;
+		selected.SetActive(true);
+	}
 
 	/* Sound Effect */
 	private void playPanelSound()
@@ -223,6 +315,12 @@ public class MainMenu : MonoBehaviour
 
 		if (expert != -1)
 			expertScore.text = "Expert: " + expert.ToString();
+	}
+
+    /* How to Play */
+    public void howToPlay()
+    {
+		Application.OpenURL("https://www.oxoinc.net/knives-fruits");
 	}
 
     /* Quit Game */

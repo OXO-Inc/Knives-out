@@ -245,3 +245,10 @@ crashlytics-build.properties
 
 #Other files
 mono_crash.115869ea88.0.json
+
+user.keystore
+Release.aab
+Release_mapping.txt
+Test/
+Test_mapping.txt
+index.html

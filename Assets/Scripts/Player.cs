@@ -21,6 +21,7 @@ public class Player : MonoBehaviour, IUnityAdsListener
     public GameObject plusScore;
     public GameObject scorePanel;
     public GameObject casualRewardedPanel;
+    public GameObject[] handController;
 
     public Sprite[] sprites;
 
@@ -35,6 +36,8 @@ public class Player : MonoBehaviour, IUnityAdsListener
     public AudioSource expertModeSound;
     public AudioSource casualModeSound;
     public AudioSource timedModeSound;
+    public AudioSource timer;
+    public AudioSource levelUpSound;
 
     public int numberOfKnives = 75;
     public int gameModeVal;
@@ -42,23 +45,32 @@ public class Player : MonoBehaviour, IUnityAdsListener
     int fastWaveMultiplier = -1;
     int level = 0;
     int knife;
+    int controller;
 
     public bool gameOver = false;
 
-    bool testMode = true; //TODO:
+    bool testMode = false;
+    bool actionExecuted = false;
+    bool soundPlayed = false;
 
     float fastWaveTime = 15f;
     float secondCount = 60f;
     float timeElapsed = 0f;
     float playerSpeedMultiplier = 3f;
+    float knifeSpeedMultiplier = 10f;
     float backToNormalTime;
+    float prev = 1f;
+    float next = 0.93f;
 
     string gameId = "3550261";
     string myPlacementId = "rewardedVideo";
 
+    Vector3 accel;
+
     void Start()
     {
         Time.timeScale = 1;
+        accel = Input.acceleration;
         Advertisement.Initialize(gameId, testMode);
         gameModeVal = PlayerPrefs.GetInt("Gamemode");
         knife = PlayerPrefs.GetInt("knifeNumber");
@@ -76,7 +88,14 @@ public class Player : MonoBehaviour, IUnityAdsListener
         {
             expertMode.SetActive(true);
         }
-        
+
+        controller = PlayerPrefs.GetInt("controller", 1);
+        if(controller == 1)
+        {
+            handController[0].SetActive(false);
+            handController[1].SetActive(false);
+        }
+
     }
 
     void setPlayer(int knife)
@@ -92,17 +111,26 @@ public class Player : MonoBehaviour, IUnityAdsListener
         image.sprite = sprites[knife];
     }
 
-    void Update()
+    void FixedUpdate()
     {
         //Game over
         if (gameOver)
             return;
 
-        //Player Control
+        //Hands Free
+        if (controller == 1)
+        {
+            var dir = new Vector3(Input.acceleration.x, 0, 0);
+            if (dir.sqrMagnitude > 1) dir.Normalize();
+            player.transform.Translate(dir * knifeSpeedMultiplier * Time.deltaTime);
+        }
+       
+        //Tap Control
         if (leftButton[0].isLeftPressed || leftButton[1].isLeftPressed)
             player.transform.Translate(Vector3.left * Time.deltaTime * playerSpeedMultiplier);
         if (rightButton[0].isRightPressed || rightButton[1].isRightPressed)
             player.transform.Translate(Vector3.right * Time.deltaTime * playerSpeedMultiplier);
+        
 
         timeElapsed += Time.deltaTime;
 
@@ -121,6 +149,18 @@ public class Player : MonoBehaviour, IUnityAdsListener
         if (gameModeVal == 2)
         {
             secondCount -= Time.deltaTime;
+            if((int)secondCount % 10 == 0 && actionExecuted == false)
+            {
+                levelUp("timed");
+                actionExecuted = true;
+            }
+
+            if((int)secondCount == 10 && !soundPlayed)
+            {
+                timer.Play();
+                soundPlayed = true;
+            }
+
             if ((int)secondCount == 0)
                 gameOverTimedMode();
             else if (secondCount < 10)
@@ -130,6 +170,16 @@ public class Player : MonoBehaviour, IUnityAdsListener
             }
             else if (secondCount > 10)
                 time.text = "00" + ":" + ((int)secondCount).ToString();
+        }
+
+        //Expert Mode
+        if (gameModeVal == 3)
+        {
+            if ((int)timeElapsed % 10 == 0 && actionExecuted == false)
+            {
+                levelUp("expert");
+                actionExecuted = true;
+            }
         }
     }
 
@@ -147,24 +197,64 @@ public class Player : MonoBehaviour, IUnityAdsListener
         plusScore.SetActive(false);
     }
 
-    private void levelUp()
+    private void levelUp(string mode)
     {
-        level += 1;
-        if (level < 10)
+        levelUpSound.Play();
+        if (mode == "casual")
         {
-            playerSpeedMultiplier = 3f + level * .1f;
-            fruitSpawner.speedMultiplier = .7f + level * .1f;
-            fruitSpawner.spawnDelay = 1f - level * .05f;        
+            level += 1;
+            if (level < 10)
+            {
+                knifeSpeedMultiplier = 10f + level * .75f;
+                playerSpeedMultiplier = 3f + level * .15f;
+                fruitSpawner.speedMultiplier = .7f + level * .1f;
+                fruitSpawner.spawnDelay = .85f - level * .05f;
+            }
+            else
+            {
+                knifeSpeedMultiplier = 17.5f;
+                playerSpeedMultiplier = 4f;
+                fruitSpawner.speedMultiplier = .8f;
+                fruitSpawner.spawnDelay = .5f;
+            }
+
+            fruitSpawner.callInvoke();
+            StartCoroutine(fade(.65f, 1f, 3f));
+        }
+        else if(mode == "timed")
+        {
+            level += 1;
+            knifeSpeedMultiplier = 10f + level * .5f;
+            playerSpeedMultiplier = 3f + level * .075f;
+            fruitSpawner.speedMultiplier = .7f + level * .05f;
+            fruitSpawner.spawnDelay = .85f - level * .05f;
+            fruitSpawner.callInvoke();
+            StartCoroutine(fade(prev, next, 2f));
+            prev = next;
+            next = next - 0.07f;
         }
         else
         {
-            playerSpeedMultiplier = 4f;
-            fruitSpawner.speedMultiplier = .8f;
-            fruitSpawner.spawnDelay = .5f;
+            level += 1;
+            if (level < 20)
+            {
+                knifeSpeedMultiplier = 10f + level * .4f;
+                playerSpeedMultiplier = 3f + level * .075f;
+                fruitSpawner.speedMultiplier = .7f + level * .05f;
+                fruitSpawner.spawnDelay = .85f - level * .025f;
+                prev = next;
+                next = next - 0.035f;
+                StartCoroutine(fade(prev, next, 2f));
+            }
+            else
+            {
+                knifeSpeedMultiplier = 17.5f;
+                playerSpeedMultiplier = 4f;
+                fruitSpawner.speedMultiplier = .8f;
+                fruitSpawner.spawnDelay = .5f;
+            }
+            fruitSpawner.callInvoke();            
         }
-
-        fruitSpawner.callInvoke();
-        StartCoroutine(fade(.65f, 1f, 3f));
     }
 
     private void fastWave()
@@ -173,11 +263,13 @@ public class Player : MonoBehaviour, IUnityAdsListener
         backToNormalTime = 5 + Random.Range(1.15f, 1.25f) * fastWaveMultiplier;
         fastWaveTime = fastWaveTime + Random.Range(15, 20) + 1.25f * fastWaveMultiplier;
 
+        knifeSpeedMultiplier = 15f;
         playerSpeedMultiplier = 4f;
         fruitSpawner.speedMultiplier = .8f;
         fruitSpawner.spawnDelay = .5f;
 
         fruitSpawner.callInvoke();
+        //fruitSpawner.spawnKnife();
 
         StartCoroutine(fade(1f, .65f, 1.5f));
         StartCoroutine(backToNormal(backToNormalTime));
@@ -186,7 +278,7 @@ public class Player : MonoBehaviour, IUnityAdsListener
     IEnumerator backToNormal(float time)
     {
         yield return new WaitForSeconds(time);
-        levelUp();
+        levelUp("casual");
     }
 
     IEnumerator fade(float from, float to, float time)
@@ -197,6 +289,7 @@ public class Player : MonoBehaviour, IUnityAdsListener
             background.GetComponent<Image>().color = newColor;
             yield return null;
         }
+        actionExecuted = false;
     }
 
     private void gameOverTimedMode()

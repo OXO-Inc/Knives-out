@@ -11,6 +11,9 @@ public class Destructor : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D col)
     {
+        if (col.gameObject.tag == "GameController")
+            return;
+
         fruitMiss.Play();
         if (col.gameObject.tag == "Fruit" && player.gameModeVal == 3)
             player.gameOverExpertMode();
